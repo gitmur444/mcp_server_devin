@@ -1,0 +1,264 @@
+openapi: 3.0.0
+info:
+  title: DonutBuffer MCP API
+  version: 1.0.0
+  description: |
+    HTTP API для работы с DonutBuffer через MCP сервер.
+    Позволяет анализировать документацию, создавать конфигурации буферов,
+    запускать тесты и интерпретировать результаты производительности.
+
+servers:
+  - url: https://your-domain.com
+    description: Production server
+  - url: http://localhost:8000
+    description: Local development server
+
+paths:
+  /analyze-readme:
+    get:
+      summary: Анализ README DonutBuffer
+      description: |
+        Анализирует документацию DonutBuffer и возвращает структурированную
+        информацию о возможностях, требованиях и типах буферов.
+      operationId: analyzeReadme
+      responses:
+        '200':
+          description: Успешный анализ документации
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  analysis:
+                    type: string
+                    description: Структурированный анализ README
+                  tool:
+                    type: string
+                    example: "analyze_readme"
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /configure-buffer:
+    post:
+      summary: Создание конфигурации буфера
+      description: |
+        Генерирует оптимальную конфигурацию буфера на основе
+        требований пользователя в естественном языке.
+      operationId: configureBuffer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                requirements:
+                  type: string
+                  description: Требования к буферу на естественном языке
+                  example: "high performance setup for video processing"
+              required:
+                - requirements
+      responses:
+        '200':
+          description: Конфигурация успешно создана
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  configuration:
+                    type: string
+                    description: Сгенерированная конфигурация с объяснениями
+                  requirements:
+                    type: string
+                    description: Исходные требования пользователя
+                  tool:
+                    type: string
+                    example: "configure_buffer"
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /run-buffer:
+    post:
+      summary: Запуск буфера
+      description: |
+        Выполняет DonutBuffer программу с указанной конфигурацией
+        и возвращает результаты выполнения или ошибки сборки.
+      operationId: runBuffer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                config:
+                  $ref: '#/components/schemas/BufferConfig'
+              required:
+                - config
+      responses:
+        '200':
+          description: Буфер успешно запущен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  execution_result:
+                    type: string
+                    description: Результат выполнения программы
+                  config_used:
+                    $ref: '#/components/schemas/BufferConfig'
+                  tool:
+                    type: string
+                    example: "run_buffer"
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /interpret-results:
+    post:
+      summary: Интерпретация результатов
+      description: |
+        Анализирует результаты выполнения DonutBuffer,
+        интерпретирует метрики производительности и дает рекомендации.
+      operationId: interpretResults
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                execution_output:
+                  type: string
+                  description: Вывод программы DonutBuffer
+                  example: "Throughput: 850.5 MB/s, Latency: 1.2ms"
+                config:
+                  $ref: '#/components/schemas/BufferConfig'
+              required:
+                - execution_output
+                - config
+      responses:
+        '200':
+          description: Результаты успешно интерпретированы
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  interpretation:
+                    type: string
+                    description: Анализ производительности и рекомендации
+                  execution_output:
+                    type: string
+                    description: Исходный вывод программы
+                  config_analyzed:
+                    $ref: '#/components/schemas/BufferConfig'
+                  tool:
+                    type: string
+                    example: "interpret_results"
+        '500':
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /health:
+    get:
+      summary: Проверка состояния сервиса
+      description: Проверяет подключение к MCP серверу
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Сервис работает
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy, unhealthy]
+                  mcp_server:
+                    type: string
+                    enum: [connected, disconnected]
+                  timestamp:
+                    type: string
+                    format: date-time
+
+components:
+  schemas:
+    BufferConfig:
+      type: object
+      description: Конфигурация буфера DonutBuffer
+      properties:
+        buffer_type:
+          type: string
+          enum: [lockfree, mutex, concurrent_queue]
+          description: Тип буфера
+          example: "lockfree"
+        producers:
+          type: integer
+          minimum: 1
+          maximum: 16
+          description: Количество производителей
+          example: 4
+        consumers:
+          type: integer
+          minimum: 1
+          maximum: 16
+          description: Количество потребителей
+          example: 2
+        buffer_size_mb:
+          type: integer
+          minimum: 1
+          maximum: 1024
+          description: Размер буфера в мегабайтах
+          example: 16
+        total_transfer_mb:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          description: Общий объем передачи в мегабайтах
+          example: 1000
+        nogui:
+          type: boolean
+          description: Отключить графический интерфейс
+          example: true
+      required:
+        - buffer_type
+        - producers
+        - consumers
+
+    Error:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: Описание ошибки
+          example: "MCP server error: Connection failed"
