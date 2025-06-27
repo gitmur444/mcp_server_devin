@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "donutbuffer": {
+      "command": "python",
+      "args": ["-m", "mcp_server_devin_pkg"],
+      "cwd": "/home/ubuntu/mcp_server_devin"
+    }
+  }
+}
